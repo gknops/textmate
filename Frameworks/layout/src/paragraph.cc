@@ -190,15 +190,23 @@ namespace ng
 		if(_line)
 			_line->draw_foreground(CGPointMake(anchor.x, anchor.y + baseline), context, isFlipped, misspelled);
 
-		if(invisibles.enabled || (_type != kNodeTypeTab && _type != kNodeTypeNewline))
+		if(invisibles.enabled || _type != kNodeTypeNewline)
 		{
 			std::string str = NULL_STR;
 			scope::scope_t scope = buffer.scope(bufferOffset).right;
 			switch(_type)
 			{
 				case kNodeTypeTab:
-					str = invisibles.tab;
-					scope.push_scope("deco.invisible.tab");
+					if(invisibles.enabled)
+					{
+						str = invisibles.tab;
+						scope.push_scope("deco.invisible.tab");
+					}
+					else
+					{
+						str = "│";
+						scope.push_scope("deco.guide.indent");
+					}
 				break;
 				case kNodeTypeNewline:
 					str = invisibles.newline;
