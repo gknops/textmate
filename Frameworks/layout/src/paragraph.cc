@@ -185,7 +185,7 @@ namespace ng
 		}
 	}
 
-	void paragraph_t::node_t::draw_foreground (theme_ptr const& theme, ng::context_t const& context, bool isFlipped, CGRect visibleRect, ng::invisibles_t const& invisibles, ng::buffer_t const& buffer, size_t bufferOffset, std::vector< std::pair<size_t, size_t> > const& misspelled, CGPoint anchor, CGFloat baseline) const
+	void paragraph_t::node_t::draw_foreground (theme_ptr const& theme, ng::context_t const& context, bool isFlipped, bool leadingTab, CGRect visibleRect, ng::invisibles_t const& invisibles, ng::buffer_t const& buffer, size_t bufferOffset, std::vector< std::pair<size_t, size_t> > const& misspelled, CGPoint anchor, CGFloat baseline) const
 	{
 		if(_line)
 			_line->draw_foreground(CGPointMake(anchor.x, anchor.y + baseline), context, isFlipped, misspelled);
@@ -202,7 +202,7 @@ namespace ng
 						str = invisibles.tab;
 						scope.push_scope("deco.invisible.tab");
 					}
-					else
+					else if(leadingTab)
 					{
 						str = "│";
 						scope.push_scope("deco.guide.indent");
@@ -767,6 +767,7 @@ namespace ng
 		{
 			CGFloat x = lines[i].x;
 			size_t offset = bufferOffset + lines[i].offset;
+			bool leadingTab = true;
 			foreach(node, _nodes.begin() + lines[i].first, _nodes.begin() + lines[i].last)
 			{
 				std::vector< std::pair<size_t, size_t> > misspelled;
@@ -789,8 +790,13 @@ namespace ng
 						}
 					}
 				}
-
-				node->draw_foreground(theme, context, isFlipped, visibleRect, invisibles, buffer, offset, misspelled, CGPointMake(anchor.x + x, anchor.y + lines[i].y), lines[i].baseline);
+				
+				if(node->type() != kNodeTypeTab)
+				{
+					leadingTab = false;
+				}
+				
+				node->draw_foreground(theme, context, isFlipped, leadingTab, visibleRect, invisibles, buffer, offset, misspelled, CGPointMake(anchor.x + x, anchor.y + lines[i].y), lines[i].baseline);
 				x += node->width();
 				offset += node->length();
 			}
